@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Питання Богдану</title>
+</head>
+<body>
+    <div class="container">
+        <div class="form">
+            <h1>Є питання Богдану? Ставте!</h1>
+            <div class="data__block">
+                <input type="text" id="name" placeholder="Ім'я" required>
+                <input type="text" id="group" placeholder="Група" required>
+                <input type="text" id="tg" placeholder="Тег в телеграмі" required>
+            </div>
+            <div class="text__area">
+                <p class="message">Повідомлення</p>
+                <textarea id="question" rows="5" placeholder="Напишіть своє питання..." required></textarea>
+            </div>
+            <div class="send">
+                <button type="submit" onclick="sendMessage()">Відправити</button>
+            </div>
+            <div class="notification success" id="successMessage">Повідомлення успішно надіслано!</div>
+            <div class="notification error" id="errorMessage">Не вдалося надіслати повідомлення.</div>
+            <div class="notification warning" id="warningMessage"></div>
+            <div class="overlay" id="overlay">
+                <div class="popup" id="popupMessage">Гондонам сюди неможна</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const botToken = "8098667254:AAFfNM9lDWllZ51xYCoDOcVk5K3I72stCgY";
+        const chatId = "-4545681424";
+
+        function sendMessage() {
+            const name = document.getElementById("name").value;
+            const group = document.getElementById("group").value.trim().toUpperCase();
+            const tgTag = document.getElementById("tg").value;
+            const question = document.getElementById("question").value;
+
+            const validGroups = ["КН", "КН2", "КН-2", "Кн", "Кн2", "кн", "кн-2"];
+            const ipzGroups = ["ІПЗ", "іпз", "Іпз"];
+            const warningMessage = document.getElementById("warningMessage");
+            const successMessage = document.getElementById("successMessage");
+            const errorMessage = document.getElementById("errorMessage");
+            const overlay = document.getElementById("overlay");
+            const popupMessage = document.getElementById("popupMessage");
+
+            successMessage.style.display = 'none';
+            errorMessage.style.display = 'none';
+            warningMessage.style.display = 'none';
+            overlay.style.display = 'none';
+
+            if (!validGroups.includes(group) && !ipzGroups.includes(group)) {
+                warningMessage.textContent = "Ви не з групи КН!";
+                warningMessage.className = "notification warning";
+                warningMessage.style.display = 'block';
+                return;
+            }
+
+            if (ipzGroups.includes(group)) {
+                overlay.style.display = 'block';
+                return;
+            }
+
+            const message = `Нове запитання:
+Ім'я: ${name}
+Група: ${group}
+Telegram: ${tgTag}
+Запитання: ${question}`;
+
+            fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    chat_id: chatId,
+                    text: message
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.ok) {
+                    successMessage.style.display = 'block';
+                    setTimeout(() => {
+                        successMessage.style.display = 'none';
+                    }, 3000);
+                } else {
+                    errorMessage.style.display = 'block';
+                }
+            })
+            .catch(error => {
+                console.error("Помилка:", error);
+                errorMessage.style.display = 'block';
+                setTimeout(() => {
+                    errorMessage.style.display = 'none';
+                }, 3000);
+            });
+        }
+    </script>
+</body>
+</html>
